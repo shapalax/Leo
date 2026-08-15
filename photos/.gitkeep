@@ -1,0 +1,3 @@
+# Keep the photos directory in the repository
+
+This file ensures the photos/ directory is tracked by Git.
