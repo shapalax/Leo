@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Léo Movsisyan</title>
+    <!-- Официальный скрипт Stripe Buy Button для встроенной оплаты -->
+    <script async src="https://js.stripe.com/v3/buy-button.js"></script>
     <style>
         :root {
             --bg-pink: #fde2e4;
@@ -58,9 +60,79 @@
         body::before { background: #f472b6; top: -50px; left: -50px; }
         body::after { background: #38bdf8; bottom: -50px; right: -50px; }
 
+        /* ВСПЛЫВАЮЩАЯ КНОПКА В САМОМ ВЕРХУ СAЙТА (STICKY BANNER) */
+        .top-gift-banner {
+            position: sticky;
+            top: calc(env(safe-area-inset-top) + 8px);
+            z-index: 900;
+            width: 100%;
+            max-width: 440px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 10px 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 8px 25px rgba(244, 63, 94, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .top-gift-banner:active {
+            transform: scale(0.98);
+        }
+
+        .top-gift-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .top-gift-icon {
+            font-size: 20px;
+            line-height: 1;
+            animation: giftBounce 2s infinite ease-in-out;
+        }
+
+        @keyframes giftBounce {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-3px) rotate(5deg); }
+        }
+
+        .top-gift-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .top-gift-title {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .top-gift-sub {
+            font-size: 11px;
+            color: #e11d48;
+            font-weight: 600;
+        }
+
+        .top-gift-action {
+            background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(225, 29, 72, 0.25);
+            white-space: nowrap;
+        }
+
         /* HEADER */
         .header {
-            margin-top: calc(env(safe-area-inset-top) + 16px);
             text-align: center;
             margin-bottom: 12px;
         }
@@ -324,8 +396,104 @@
 
         .more-btn svg { width: 16px; height: 16px; fill: currentColor; }
 
+        /* MODAL POPUP (ВСПЛЫВАЮЩЕЕ ОКНО ДЛЯ ОПЛАТЫ) */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: #ffffff;
+            border-radius: 28px;
+            width: 100%;
+            max-width: 440px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            position: relative;
+            transform: translateY(20px) scale(0.95);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px; right: 16px;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #64748b;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 10;
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-product-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            object-fit: cover;
+            margin: 0 auto 12px auto;
+            display: block;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+
+        .modal-desc {
+            font-size: 13.5px;
+            color: #475569;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        /* Контейнер кнопки оплаты Stripe */
+        #checkout-container {
+            min-height: 120px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-top: 8px;
+        }
+
         .footer {
-            margin-top: 15px;
+            margin-top: 25px;
             text-align: center;
             font-size: 12px;
             color: #475569;
@@ -366,11 +534,7 @@
             box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
         }
 
-        .audio-btn svg {
-            width: 14px;
-            height: 14px;
-            fill: currentColor;
-        }
+        .audio-btn svg { width: 14px; height: 14px; fill: currentColor; }
 
         .audio-progress-bar {
             width: 45px;
@@ -390,6 +554,18 @@
     </style>
 </head>
 <body>
+
+    <!-- ВСПЛЫВАЮЩАЯ ПЛАШКА В САМОМ ВЕРХУ -->
+    <div class="top-gift-banner" onclick="openGiftModal()">
+        <div class="top-gift-content">
+            <span class="top-gift-icon">🎁</span>
+            <div class="top-gift-text">
+                <span class="top-gift-title">Сделать приятное Лео</span>
+                <span class="top-gift-sub">Faire plaisir à Léo</span>
+            </div>
+        </div>
+        <div class="top-gift-action">Участвовать ✨</div>
+    </div>
 
     <header class="header">
         <h1>Léo Movsisyan</h1>
@@ -470,6 +646,27 @@
         <p>❤️ Léo Movsisyan</p>
     </footer>
 
+    <!-- ВСПЛЫВАЮЩЕЕ ОКНО (MODAL) ОПЛАТЫ STRIPE -->
+    <div id="gift-modal" class="modal-overlay" onclick="closeGiftModal(event)">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeGiftModal()">✕</button>
+            <div class="modal-header">
+                <img id="modal-product-img" src="" alt="Léo" class="modal-product-img">
+                <h3 id="modal-product-name" class="modal-title"></h3>
+                <p id="modal-product-desc" class="modal-desc"></p>
+            </div>
+            
+            <!-- Форма оплаты Stripe без перехода на другой сайт -->
+            <div id="checkout-container">
+                <stripe-buy-button
+                    buy-button-id="ВСТАВЬТЕ_ВАШ_BUY_BUTTON_ID"
+                    publishable-key="pk_live_ВСТАВЬТЕ_ВАШ_PUBLISHABLE_KEY">
+                </stripe-buy-button>
+            </div>
+        </div>
+    </div>
+
+    <!-- АУДИО ПЛЕЕР -->
     <div id="audio-container" class="audio-container">
         <button id="audio-toggle" class="audio-btn" aria-label="Воспроизвести / Пауза">
             <svg id="audio-icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -482,6 +679,29 @@
     <audio id="bg-audio" src="audio.mp3" preload="auto" loop></audio>
 
     <script>
+        // ДАННЫЕ ПРОДУКТА STRIPE
+        const stripeProduct = {
+            id: "prod_V6IDuFyPRdjMhE",
+            default_price: "price_1U65dWIV5DzsLoYuK5mw9O0z",
+            name: "Participer au bonheur de Léo",
+            description: "On aime tous gâter Léo ! Si vous souhaitez vous joindre à nous pour lui imaginer une belle surprise ou lui préparer une super activité, c’est ici. Merci de partager tout ce bonheur avec nous!",
+            image: "https://files.stripe.com/links/MDB8YWNjdF8xVTR0WmVJVjVEenNMb1l1fGZsX2xpdmVfem9RMmp3bVBrQ3g2U2ZEUEpnemFmdHl400K93AXpou"
+        };
+
+        // Подстановка данных в модальное окно
+        document.getElementById('modal-product-img').src = stripeProduct.image;
+        document.getElementById('modal-product-name').innerText = stripeProduct.name;
+        document.getElementById('modal-product-desc').innerText = stripeProduct.description;
+
+        function openGiftModal() {
+            document.getElementById('gift-modal').classList.add('active');
+        }
+
+        function closeGiftModal(e) {
+            document.getElementById('gift-modal').classList.remove('active');
+        }
+
+        // ЛОГИКА ФОТО-ГАЛЕРЕИ (STACK)
         let photos = [];
         const stackContainer = document.getElementById('stack');
         const badge = document.getElementById('badge');
@@ -499,9 +719,8 @@
         let isDragging = false;
         const VISIBLE_CARDS_LIMIT = 4;
 
-        // ЛОГИКА АВТОПРОКРУТКИ
         let autoPlayInterval = null;
-        const AUTO_PLAY_DELAY = 3500; // Интервал прокрутки — 3.5 сек
+        const AUTO_PLAY_DELAY = 3500;
 
         function startAutoPlay() {
             if (!autoPlayInterval && photos.length > 1) {
@@ -541,7 +760,6 @@
                 const data = await response.json();
                 photos = data.map(file => file.startsWith('photos/') || file.startsWith('photo/') ? file : `photos/${file}`);
             } catch (error) {
-                console.warn('Запасной список:', error);
                 photos = [];
                 for (let i = 1; i <= 59; i++) {
                     photos.push(i === 14 ? 'photos/14.mp4' : `photos/${i}.jpg`);
@@ -731,7 +949,7 @@
             onTouchEnd();
         }
 
-        // ЛОГИКА ФОНОВОЙ МУЗЫКИ И БАРА ЗАГРУЗКИ
+        // АУДИО ПЛЕЕР
         const audio = document.getElementById('bg-audio');
         const progressBar = document.getElementById('audio-loading-progress');
         const audioToggle = document.getElementById('audio-toggle');
@@ -748,7 +966,6 @@
             }
         }
 
-        // Индикатор загрузки аудиофайла
         audio.addEventListener('progress', () => {
             if (audio.buffered.length > 0) {
                 const loadedRatio = audio.buffered.end(0) / audio.duration;
@@ -758,14 +975,9 @@
         });
 
         function tryPlayAudio() {
-            audio.play().then(() => {
-                updateAudioUI();
-            }).catch(() => {
-                updateAudioUI();
-            });
+            audio.play().then(() => updateAudioUI()).catch(() => updateAudioUI());
         }
 
-        // Автозапуск музыки при первом клике или свайпе
         const initAudioOnInteraction = () => {
             tryPlayAudio();
             document.removeEventListener('touchstart', initAudioOnInteraction);
@@ -777,11 +989,8 @@
 
         audioToggle.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (audio.paused) {
-                audio.play();
-            } else {
-                audio.pause();
-            }
+            if (audio.paused) audio.play();
+            else audio.pause();
             updateAudioUI();
         });
 
