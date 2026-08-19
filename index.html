@@ -4,14 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Léo Movsisyan</title>
-    <!-- Официальный скрипт Stripe Buy Button для встроенной оплаты -->
+    <!-- Подключаем скрипт встроенных кнопок Stripe Buy Button -->
     <script async src="https://js.stripe.com/v3/buy-button.js"></script>
     <style>
         :root {
             --bg-pink: #fde2e4;
             --bg-blue: #e0f2fe;
             --bg-yellow: #fef9c3;
-            
             --card-bg: rgba(255, 255, 255, 0.78);
             --card-border: rgba(255, 255, 255, 0.85);
             --accent-blue: #0284c7;
@@ -60,7 +59,6 @@
         body::before { background: #f472b6; top: -50px; left: -50px; }
         body::after { background: #38bdf8; bottom: -50px; right: -50px; }
 
-        /* ВСПЛЫВАЮЩАЯ КНОПКА В САМОМ ВЕРХУ СAЙТА (STICKY BANNER) */
         .top-gift-banner {
             position: sticky;
             top: calc(env(safe-area-inset-top) + 8px);
@@ -82,9 +80,7 @@
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        .top-gift-banner:active {
-            transform: scale(0.98);
-        }
+        .top-gift-banner:active { transform: scale(0.98); }
 
         .top-gift-content {
             display: flex;
@@ -131,7 +127,6 @@
             white-space: nowrap;
         }
 
-        /* HEADER */
         .header {
             text-align: center;
             margin-bottom: 12px;
@@ -154,7 +149,6 @@
             margin-top: 2px;
         }
 
-        /* STACK CONTAINER */
         .stack-section {
             width: 100%;
             max-width: 420px;
@@ -175,7 +169,6 @@
             touch-action: none;
         }
 
-        /* PHOTO CARD */
         .photo-card {
             position: absolute;
             width: 100%;
@@ -280,7 +273,6 @@
             50% { opacity: 1; transform: translateX(-50%) translateY(2px); }
         }
 
-        /* CONTENT CONTAINER */
         .content-container {
             width: 100%;
             max-width: 440px;
@@ -396,7 +388,7 @@
 
         .more-btn svg { width: 16px; height: 16px; fill: currentColor; }
 
-        /* MODAL POPUP (ВСПЛЫВАЮЩЕЕ ОКНО ДЛЯ ОПЛАТЫ) */
+        /* MODAL */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -482,7 +474,6 @@
             margin-bottom: 16px;
         }
 
-        /* Контейнер кнопки оплаты Stripe */
         #checkout-container {
             min-height: 120px;
             width: 100%;
@@ -501,7 +492,6 @@
             padding-bottom: env(safe-area-inset-bottom);
         }
 
-        /* АУДИО ПЛЕЕР */
         .audio-container {
             position: fixed;
             bottom: calc(env(safe-area-inset-bottom) + 16px);
@@ -555,7 +545,6 @@
 </head>
 <body>
 
-    <!-- ВСПЛЫВАЮЩАЯ ПЛАШКА В САМОМ ВЕРХУ -->
     <div class="top-gift-banner" onclick="openGiftModal()">
         <div class="top-gift-content">
             <span class="top-gift-icon">🎁</span>
@@ -646,7 +635,7 @@
         <p>❤️ Léo Movsisyan</p>
     </footer>
 
-    <!-- ВСПЛЫВАЮЩЕЕ ОКНО (MODAL) ОПЛАТЫ STRIPE -->
+    <!-- MODAL С ВСТРОЕННОЙ ФОРМОЙ ОПЛАТЫ STRIPE BUY BUTTON -->
     <div id="gift-modal" class="modal-overlay" onclick="closeGiftModal(event)">
         <div class="modal-card" onclick="event.stopPropagation()">
             <button class="modal-close" onclick="closeGiftModal()">✕</button>
@@ -656,17 +645,15 @@
                 <p id="modal-product-desc" class="modal-desc"></p>
             </div>
             
-            <!-- Форма оплаты Stripe без перехода на другой сайт -->
             <div id="checkout-container">
                 <stripe-buy-button
-                    buy-button-id="ВСТАВЬТЕ_ВАШ_BUY_BUTTON_ID"
-                    publishable-key="pk_live_ВСТАВЬТЕ_ВАШ_PUBLISHABLE_KEY">
+                    buy-button-id="buy_btn_1U668UIV5DzsLoYukEReQYWW"
+                    publishable-key="pk_live_51U4tZeIV5DzsLoYubErKXrtxHkYIB8xlvRuedpMTvSCR9fYVyBEl4KtnDIAHmfD542gY2AfQFB64vhCektxTFkOr00ID42MQN6">
                 </stripe-buy-button>
             </div>
         </div>
     </div>
 
-    <!-- АУДИО ПЛЕЕР -->
     <div id="audio-container" class="audio-container">
         <button id="audio-toggle" class="audio-btn" aria-label="Воспроизвести / Пауза">
             <svg id="audio-icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -679,7 +666,6 @@
     <audio id="bg-audio" src="audio.mp3" preload="auto" loop></audio>
 
     <script>
-        // ДАННЫЕ ПРОДУКТА STRIPE
         const stripeProduct = {
             id: "prod_V6IDuFyPRdjMhE",
             default_price: "price_1U65dWIV5DzsLoYuK5mw9O0z",
@@ -688,7 +674,6 @@
             image: "https://files.stripe.com/links/MDB8YWNjdF8xVTR0WmVJVjVEenNMb1l1fGZsX2xpdmVfem9RMmp3bVBrQ3g2U2ZEUEpnemFmdHl400K93AXpou"
         };
 
-        // Подстановка данных в модальное окно
         document.getElementById('modal-product-img').src = stripeProduct.image;
         document.getElementById('modal-product-name').innerText = stripeProduct.name;
         document.getElementById('modal-product-desc').innerText = stripeProduct.description;
@@ -701,7 +686,6 @@
             document.getElementById('gift-modal').classList.remove('active');
         }
 
-        // ЛОГИКА ФОТО-ГАЛЕРЕИ (STACK)
         let photos = [];
         const stackContainer = document.getElementById('stack');
         const badge = document.getElementById('badge');
@@ -906,7 +890,7 @@
                 const throwY = deltaY * 3;
                 const throwRotate = deltaX * 0.15;
 
-                topCard.style.transition = 'transform 0.4s ease-out, opacity 0.35s ease-out';
+                topCard.style.transition = 'transform 0.45s ease-out, opacity 0.35s ease-out';
                 topCard.style.transform = `translate3d(${throwX}px, ${throwY}px, 0px) rotate(${throwRotate}deg)`;
                 topCard.style.opacity = '0';
 
@@ -949,7 +933,6 @@
             onTouchEnd();
         }
 
-        // АУДИО ПЛЕЕР
         const audio = document.getElementById('bg-audio');
         const progressBar = document.getElementById('audio-loading-progress');
         const audioToggle = document.getElementById('audio-toggle');
