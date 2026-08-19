@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Léo Movsisyan</title>
-
-    <!-- Подключаем библиотеку Stripe -->
-    <script src="https://js.stripe.com/v3/"></script>
+    <title>King Léo Movsisyan</title>
 
     <style>
         :root {
@@ -468,21 +465,7 @@
             font-size: 13px;
             color: #475569;
             line-height: 1.4;
-            margin-bottom: 16px;
-        }
-
-        .payment-element-container {
-            min-height: 200px;
-            margin-bottom: 16px;
-            text-align: left;
-        }
-
-        .card-error-text {
-            color: #e11d48;
-            font-size: 12.5px;
-            margin-bottom: 12px;
-            text-align: left;
-            min-height: 18px;
+            margin-bottom: 20px;
         }
 
         .pay-btn {
@@ -497,17 +480,13 @@
             font-weight: 700;
             border-radius: 16px;
             border: none;
+            text-decoration: none;
             cursor: pointer;
             box-shadow: 0 6px 20px rgba(2, 132, 199, 0.35);
             transition: all 0.2s ease;
         }
 
-        .pay-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .pay-btn:active:not(:disabled) {
+        .pay-btn:active {
             transform: scale(0.97);
         }
 
@@ -577,15 +556,15 @@
         <div class="top-gift-content">
             <span class="top-gift-icon">🎁</span>
             <div class="top-gift-text">
-                <span class="top-gift-title">Сделать приятное Лео</span>
-                <span class="top-gift-sub">Faire plaisir à Léo</span>
+                <span class="top-gift-title">Faire plaisir à Léo</span>
+                <span class="top-gift-sub">Сделать приятное Лео</span>
             </div>
         </div>
-        <div class="top-gift-action">Участвовать ✨</div>
+        <div class="top-gift-action">Participer ✨</div>
     </div>
 
     <header class="header">
-        <h1>Léo Movsisyan</h1>
+        <h1>King Léo Movsisyan</h1>
         <p>Album Photo</p>
     </header>
 
@@ -660,26 +639,21 @@
     </main>
 
     <footer class="footer">
-        <p>❤️ Léo Movsisyan</p>
+        <p>❤️ King Léo Movsisyan</p>
     </footer>
 
-    <!-- МОДАЛЬНОЕ ОКНО С APPLE PAY, GOOGLE PAY И КАРТАМИ -->
+    <!-- МОДАЛЬНОЕ ОКНО ОПЛАТЫ -->
     <div id="gift-modal" class="modal-overlay" onclick="closeGiftModal(event)">
         <div class="modal-card" onclick="event.stopPropagation()">
             <button class="modal-close" onclick="closeGiftModal()">✕</button>
-            <img id="modal-product-img" src="" alt="Léo" class="modal-product-img">
+            <img id="modal-product-img" src="" alt="King Léo" class="modal-product-img">
             <h3 id="modal-product-name" class="modal-title"></h3>
             <p id="modal-product-desc" class="modal-desc"></p>
 
-            <form id="payment-form">
-                <!-- Сюда встроятся Apple Pay, Google Pay и форма карты -->
-                <div id="payment-element" class="payment-element-container"></div>
-                <div id="card-errors" role="alert" class="card-error-text"></div>
-                
-                <button id="submit-pay-btn" class="pay-btn" type="submit">
-                    <span>Participer (15 €) ✨</span>
-                </button>
-            </form>
+            <!-- Ссылка на Stripe Donate / Payment Link -->
+            <a id="pay-link" href="https://donate.stripe.com/28EdRag4G9xZg4O28g33W00" class="pay-btn" target="_blank" rel="noopener noreferrer">
+                <span>Participer / Участвовать ✨</span>
+            </a>
         </div>
     </div>
 
@@ -695,9 +669,10 @@
     <audio id="bg-audio" src="audio.mp3" preload="auto" loop></audio>
 
     <script>
-        // ИНИЦИАЛИЗАЦИЯ STRIPE С ВАШИМ ПУБЛИЧНЫМ КЛЮЧОМ
-        const stripe = Stripe('pk_live_51U4tZeIV5DzsLoYubErKXrtxHkYIB8xlvRuedpMTvSCR9fYVyBEl4KtnDIAHmfD542gY2AfQFB64vhCektxTFkOr00ID42MQN6');
-        let elements;
+        // -------------------------------------------------------------
+        // ССЫЛКА ИЗ STRIPE
+        // -------------------------------------------------------------
+        const STRIPE_PAYMENT_LINK = "https://donate.stripe.com/28EdRag4G9xZg4O28g33W00";
 
         const stripeProduct = {
             name: "Participer au bonheur de Léo",
@@ -708,66 +683,15 @@
         document.getElementById('modal-product-img').src = stripeProduct.image;
         document.getElementById('modal-product-name').innerText = stripeProduct.name;
         document.getElementById('modal-product-desc').innerText = stripeProduct.description;
+        document.getElementById('pay-link').href = STRIPE_PAYMENT_LINK;
 
-        async function openGiftModal() {
+        function openGiftModal() {
             document.getElementById('gift-modal').classList.add('active');
-
-            if (!elements) {
-                try {
-                    // Запрос к бэкенду на получение clientSecret
-                    const response = await fetch('/create-payment-intent', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ amount: 1500, currency: 'eur' })
-                    });
-                    
-                    const data = await response.json();
-
-                    if (!data.clientSecret) {
-                        throw new Error("Не удалось получить ключ оплаты");
-                    }
-
-                    // Stripe Payment Element автоматически включает Apple Pay / Google Pay
-                    elements = stripe.elements({ clientSecret: data.clientSecret });
-                    const paymentElement = elements.create('payment', {
-                        layout: 'tabs'
-                    });
-                    paymentElement.mount('#payment-element');
-
-                } catch (err) {
-                    document.getElementById('card-errors').textContent = 'Ошибка загрузки способов оплаты. Проверьте сервер.';
-                }
-            }
         }
 
         function closeGiftModal(e) {
             document.getElementById('gift-modal').classList.remove('active');
         }
-
-        // Обработка кнопки "Оплатить"
-        const paymentForm = document.getElementById('payment-form');
-        paymentForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!elements) return;
-
-            const payBtn = document.getElementById('submit-pay-btn');
-            const errorElement = document.getElementById('card-errors');
-            
-            payBtn.disabled = true;
-            errorElement.textContent = '';
-
-            const { error } = await stripe.confirmPayment({
-                elements,
-                confirmParams: {
-                    return_url: window.location.href, // Перенаправление после успешной оплаты Apple Pay/Картой
-                },
-            });
-
-            if (error) {
-                errorElement.textContent = error.message;
-                payBtn.disabled = false;
-            }
-        });
 
         // ГАЛЕРЕЯ КАРТОЧЕК
         let photos = [];
