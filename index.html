@@ -1,483 +1,1068 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Léo Movsisyan</title>
 
-<title>Школа Теократического служения</title>
+    <!-- Подключаем библиотеку Stripe -->
+    <script src="https://js.stripe.com/v3/"></script>
 
-<!-- ИКОНКИ И НАСТРОЙКИ ДЛЯ СМАРТФОНОВ (iOS / Android) -->
-<link rel="icon" type="image/png" href="iconshts.png">
-<link rel="apple-touch-icon" href="iconshts.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Школа Теократии">
+    <style>
+        :root {
+            --bg-pink: #fde2e4;
+            --bg-blue: #e0f2fe;
+            --bg-yellow: #fef9c3;
+            --card-bg: rgba(255, 255, 255, 0.78);
+            --card-border: rgba(255, 255, 255, 0.85);
+            --accent-blue: #0284c7;
+            --text-primary: #0f172a;
+            --quote-bg: rgba(2, 132, 199, 0.08);
+            --quote-border: #0284c7;
+        }
 
-<style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  -webkit-tap-highlight-color:transparent;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
 
-html,
-body{
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  touch-action:manipulation;
-  background:#f8f8f8;
-  font-family:Arial,sans-serif;
-}
+        body {
+            background: linear-gradient(135deg, var(--bg-pink) 0%, var(--bg-blue) 50%, var(--bg-yellow) 100%);
+            background-attachment: fixed;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+            color: var(--text-primary);
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            overflow-x: hidden;
+            padding: 0 16px 30px 16px;
+            position: relative;
+        }
 
-body{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding:8px;
-}
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            pointer-events: none;
+            z-index: -1;
+        }
 
-h1{
-  height:8vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:clamp(16px, 3vh, 24px);
-  color:#222;
-  margin-bottom:6px;
-  text-align: center;
-  padding: 0 4px;
-}
+        body::before { background: #f472b6; top: -50px; left: -50px; }
+        body::after { background: #38bdf8; bottom: -50px; right: -50px; }
 
-.container{
-  flex:1;
-  width:min(100%,390px);
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  grid-template-rows:repeat(5,1fr);
-  gap:10px;
-}
+        .top-gift-banner {
+            position: sticky;
+            top: calc(env(safe-area-inset-top) + 8px);
+            z-index: 900;
+            width: 100%;
+            max-width: 440px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 10px 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 8px 25px rgba(244, 63, 94, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
 
-.square{
-  background:#e60000;
-  border-radius:22px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  font-size:clamp(34px,7vw,54px);
-  font-weight:bold;
-  color:white;
-  box-shadow:0 8px 18px rgba(0,0,0,.25);
-  transition: transform 0.25s, background-color 0.25s;
-  user-select:none;
-  cursor: pointer;
-  will-change: transform;
-}
+        .top-gift-banner:active { transform: scale(0.98); }
 
-.square.gray,
-.square.green {
-  animation: none !important;
-  transform: scale(1) rotate(0deg) translate(0, 0) !important;
-}
+        .top-gift-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-.square.gray{
-  background:#555;
-}
+        .top-gift-icon {
+            font-size: 20px;
+            line-height: 1;
+            animation: giftBounce 2s infinite ease-in-out;
+        }
 
-.square.green{
-  background:#18a558;
-}
+        @keyframes giftBounce {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-3px) rotate(5deg); }
+        }
 
-.square:active{
-  transform:scale(.90) !important;
-}
+        .top-gift-text {
+            display: flex;
+            flex-direction: column;
+        }
 
-.reset-btn{
-  height:48px;
-  margin-top:10px;
-  padding:0 30px;
-  border:none;
-  border-radius:30px;
-  background:#333;
-  color:white;
-  font-size:17px;
-  flex-shrink:0;
-  cursor: pointer;
-}
+        .top-gift-title {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #0f172a;
+        }
 
-.particle{
-  position:fixed;
-  pointer-events:none;
-  z-index:9999;
-  will-change: transform; 
-}
+        .top-gift-sub {
+            font-size: 11px;
+            color: #e11d48;
+            font-weight: 600;
+        }
 
-/* ---------- 10 УНИКАЛЬНЫХ АНИМАЦИЙ ДВИЖЕНИЯ ---------- */
-@keyframes move1 {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-@keyframes move2 {
-  0%, 100% { transform: rotate(0deg); }
-  50% { transform: rotate(3deg); }
-}
-@keyframes move3 {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.04); }
-}
-@keyframes move4 {
-  0%, 100% { transform: translateX(0); }
-  50% { transform: translateX(-5px); }
-}
-@keyframes move5 {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(4px, -4px); }
-}
-@keyframes move6 {
-  0%, 100% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(-2deg) scale(1.03); }
-}
-@keyframes move7 {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(5px); }
-}
-@keyframes move8 {
-  0%, 100% { transform: rotate(0deg); }
-  50% { transform: rotate(-3deg); }
-}
-@keyframes move9 {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(-4px, -4px); }
-}
-@keyframes move10 {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(0.96); }
-}
+        .top-gift-action {
+            background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(225, 29, 72, 0.25);
+            white-space: nowrap;
+        }
 
-.square-1 { animation: move1 3s ease-in-out infinite; }
-.square-2 { animation: move2 2.6s ease-in-out infinite; }
-.square-3 { animation: move3 3.4s ease-in-out infinite; }
-.square-4 { animation: move4 2.8s ease-in-out infinite; }
-.square-5 { animation: move5 3.2s ease-in-out infinite; }
-.square-6 { animation: move6 3s ease-in-out infinite; }
-.square-7 { animation: move7 2.5s ease-in-out infinite; }
-.square-8 { animation: move8 2.9s ease-in-out infinite; }
-.square-9 { animation: move9 3.3s ease-in-out infinite; }
-.square-10 { animation: move10 3.1s ease-in-out infinite; }
-</style>
+        .header {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #0f172a;
+            text-shadow: 0 2px 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .header p {
+            font-size: 13px;
+            font-weight: 600;
+            color: #0284c7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 2px;
+        }
+
+        .stack-section {
+            width: 100%;
+            max-width: 420px;
+            height: 52vh;
+            min-height: 390px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 28px;
+            perspective: 1000px;
+        }
+
+        .stack-container {
+            width: 88%;
+            height: 94%;
+            position: relative;
+            touch-action: none;
+        }
+
+        .photo-card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 24px;
+            overflow: hidden;
+            background-color: #0f172a;
+            box-shadow: 0 16px 35px -10px rgba(15, 23, 42, 0.25), 0 6px 15px -3px rgba(0, 0, 0, 0.1);
+            border: 4px solid #ffffff;
+            cursor: grab;
+            will-change: transform, opacity;
+            transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1), opacity 0.4s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .photo-card:active { cursor: grabbing; }
+
+        .photo-bg-blur {
+            position: absolute;
+            top: -10%; left: -10%;
+            width: 120%; height: 120%;
+            background-size: cover;
+            background-position: center;
+            filter: blur(22px) brightness(0.9);
+            transform: scale(1.1);
+            pointer-events: none;
+        }
+
+        .photo-fg-main {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .card-video {
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            position: relative;
+            z-index: 1;
+            border-radius: 20px;
+            pointer-events: none;
+        }
+
+        .photo-card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to right, 
+                rgba(15, 23, 42, 0.35) 0%, 
+                transparent 18%, 
+                transparent 82%, 
+                rgba(15, 23, 42, 0.35) 100%);
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .badge {
+            position: absolute;
+            bottom: 12px; right: 12px;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .swipe-hint {
+            position: absolute;
+            bottom: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            white-space: nowrap;
+            animation: pulseHint 2s infinite ease-in-out;
+        }
+
+        .swipe-hint svg { width: 14px; height: 14px; fill: currentColor; }
+
+        @keyframes pulseHint {
+            0%, 100% { opacity: 0.6; transform: translateX(-50%) translateY(0); }
+            50% { opacity: 1; transform: translateX(-50%) translateY(2px); }
+        }
+
+        .content-container {
+            width: 100%;
+            max-width: 440px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .lang-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1.5px solid var(--card-border);
+            border-radius: 24px;
+            padding: 20px 22px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .lang-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 4px; height: 100%;
+            background: var(--accent-blue);
+            border-top-left-radius: 24px;
+            border-bottom-left-radius: 24px;
+        }
+
+        .lang-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .lang-flag-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .greeting {
+            font-size: 15px;
+            line-height: 1.5;
+            color: var(--text-primary);
+            font-weight: 500;
+            margin-bottom: 14px;
+            user-select: text;
+            -webkit-user-select: text;
+        }
+
+        .nowrap-colon { white-space: nowrap; }
+
+        .verse-box {
+            background: var(--quote-bg);
+            border-left: 3px solid var(--quote-border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+        }
+
+        .verse-text {
+            font-size: 14.5px;
+            line-height: 1.55;
+            color: #1e293b;
+            font-style: italic;
+            margin-bottom: 8px;
+            user-select: text;
+            -webkit-user-select: text;
+        }
+
+        .verse-ref {
+            text-align: right;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent-blue);
+            font-style: normal;
+            white-space: nowrap;
+        }
+
+        .more-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 12px 18px;
+            background: #0284c7;
+            color: #ffffff;
+            border: none;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .more-btn:active {
+            transform: scale(0.97);
+            background: #0369a1;
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.2);
+        }
+
+        .more-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: #ffffff;
+            border-radius: 28px;
+            width: 100%;
+            max-width: 400px;
+            padding: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            position: relative;
+            transform: translateY(20px) scale(0.95);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            text-align: center;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px; right: 16px;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #64748b;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 10;
+        }
+
+        .modal-product-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            object-fit: cover;
+            margin: 0 auto 12px auto;
+            display: block;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+
+        .modal-desc {
+            font-size: 13px;
+            color: #475569;
+            line-height: 1.4;
+            margin-bottom: 16px;
+        }
+
+        .payment-element-container {
+            min-height: 200px;
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .card-error-text {
+            color: #e11d48;
+            font-size: 12.5px;
+            margin-bottom: 12px;
+            text-align: left;
+            min-height: 18px;
+        }
+
+        .pay-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 700;
+            border-radius: 16px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(2, 132, 199, 0.35);
+            transition: all 0.2s ease;
+        }
+
+        .pay-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .pay-btn:active:not(:disabled) {
+            transform: scale(0.97);
+        }
+
+        .footer {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 12px;
+            color: #475569;
+            font-weight: 500;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .audio-container {
+            position: fixed;
+            bottom: calc(env(safe-area-inset-bottom) + 16px);
+            right: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            padding: 6px 12px 6px 8px;
+            border-radius: 30px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            z-index: 1000;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .audio-btn {
+            background: #0284c7;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+        }
+
+        .audio-btn svg { width: 14px; height: 14px; fill: currentColor; }
+
+        .audio-progress-bar {
+            width: 45px;
+            height: 4px;
+            background: rgba(2, 132, 199, 0.15);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .audio-progress-fill {
+            width: 0%;
+            height: 100%;
+            background: #0284c7;
+            border-radius: 2px;
+            transition: width 0.2s ease;
+        }
+    </style>
 </head>
-
 <body>
-<h1>Школа Теократии для детей</h1>
-<div class="container" id="container"></div>
-<button class="reset-btn" onclick="resetAll()">Сбросить прогресс</button>
 
-<script> 
-localStorage.clear();
+    <div class="top-gift-banner" onclick="openGiftModal()">
+        <div class="top-gift-content">
+            <span class="top-gift-icon">🎁</span>
+            <div class="top-gift-text">
+                <span class="top-gift-title">Сделать приятное Лео</span>
+                <span class="top-gift-sub">Faire plaisir à Léo</span>
+            </div>
+        </div>
+        <div class="top-gift-action">Участвовать ✨</div>
+    </div>
 
-let currentPlayingAudio = null;
+    <header class="header">
+        <h1>Léo Movsisyan</h1>
+        <p>Album Photo</p>
+    </header>
 
-// ---------- ПРЕДЗАГРУЗКА ВСЕХ ЗВУКОВ (WAV) ----------
-const taskAudioCache = {};
-const congratsAudioCache = {};
+    <section class="stack-section">
+        <div class="stack-container" id="stack"></div>
+        <div class="badge" id="badge">1 / 1</div>
+        <div class="swipe-hint">
+            <svg viewBox="0 0 24 24"><path d="M10 9h4V6h3l-5-5-5 5h3v3zm-1 1H6V7l-5 5 5 5v-3h3v-4zm14 2l-5-5v3h-3v4h3v3l5-5zm-9 3h-4v3H7l5 5 5-5h-3v-3z"/></svg>
+            Glissez la photo pour faire défiler
+        </div>
+    </section>
 
-function preloadAudio() {
-    for (let i = 1; i <= 10; i++) {
-        const taskAudio = new Audio();
-        taskAudio.src = i + ".wav";
-        taskAudio.preload = "auto";
-        taskAudioCache[i] = taskAudio;
+    <main class="content-container">
 
-        const congratsAudio = new Audio();
-        congratsAudio.src = "congrats" + i + ".wav";
-        congratsAudio.preload = "auto";
-        congratsAudioCache[i] = congratsAudio;
-    }
-}
-preloadAudio();
+        <article class="lang-card">
+            <div class="lang-header">
+                <div class="lang-flag-title"><span>🇫🇷</span> Français</div>
+            </div>
+            <p class="greeting">
+                Bonjour à tous ! Je m'appelle Léo, et je veux partager avec vous ce que je deviendrai à l'avenir. Dieu, qui ne peut mentir, le fera <span class="nowrap-colon">pour moi :</span>
+            </p>
+            <div class="verse-box">
+                <p class="verse-text">
+                    « Alors le boiteux sautera comme un cerf, et la langue du muet poussera des cris de joie. Car des eaux jailliront dans le désert, et des ruisseaux dans la solitude. »
+                </p>
+                <div class="verse-ref">Ésaïe 35:6</div>
+            </div>
+            <a href="https://www.jw.org/fr/enseignement-biblique/" target="_blank" rel="noopener noreferrer" class="more-btn">
+                En savoir plus
+                <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+        </article>
 
-function stopCurrentAudio() {
-    if (currentPlayingAudio) {
-        currentPlayingAudio.pause();
-        currentPlayingAudio.currentTime = 0;
-        currentPlayingAudio = null;
-    }
-}
+        <article class="lang-card">
+            <div class="lang-header">
+                <div class="lang-flag-title"><span>🇷🇺</span> Русский</div>
+            </div>
+            <p class="greeting">
+                Всем привет! Меня зовут Лео, хочу поделиться с вами тем, каким я стану в будущем. Бог, который не может лгать, сделает это <span class="nowrap-colon">для меня:</span>
+            </p>
+            <div class="verse-box">
+                <p class="verse-text">
+                    «Хромой будет скакать, как олень, И немой будет радостно восклицать. В пустыне пробьются источники воды, И по безводной равнине потекут потоки.»
+                </p>
+                <div class="verse-ref">Исайя 35:6</div>
+            </div>
+            <a href="https://www.jw.org/ru/библейские-учения/" target="_blank" rel="noopener noreferrer" class="more-btn">
+                Подробнее
+                <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+        </article>
 
-function playTaskSound(number) {
-    stopCurrentAudio();
-    const audio = taskAudioCache[number];
-    if (audio) {
-        currentPlayingAudio = audio;
-        audio.play().catch(() => {});
-    }
-}
+        <article class="lang-card">
+            <div class="lang-header">
+                <div class="lang-flag-title"><span>🇦🇲</span> Հայերեն</div>
+            </div>
+            <p class="greeting">
+                Ողջույն բոլորին: Իմ անունն է Լեո, ես ուզում եմ ձեզ հետ կիսվել նրանով, թե ով եմ դառնալու ապագայում: Աստված, ով չի կարող ստել, դա կանի <span class="nowrap-colon">ինձ համար.</span>
+            </p>
+            <div class="verse-box">
+                <p class="verse-text">
+                    «Այն ժամանակ կաղը եղջերուի պես պիտի ցատկոտի, և մունջի լեզուն պիտի ցնծությամբ աղաղակի. որովհետև անապատում ջրեր պիտի բխեն, և ամայի տեղերում՝ վտակներ:»
+                </p>
+                <div class="verse-ref">Եսայի 35:6</div>
+            </div>
+            <a href="https://www.jw.org/hy/աստվածաշնչյան-ուսմունքներ/" target="_blank" rel="noopener noreferrer" class="more-btn">
+                Ավելին
+                <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+        </article>
 
-function playSpecificCongrats(number) {
-    stopCurrentAudio();
-    const audio = congratsAudioCache[number];
-    if (audio) {
-        currentPlayingAudio = audio;
-        audio.play().catch(() => {});
-    }
-}
+    </main>
 
-// ---------- ПУЛ ДЛЯ СЛУЧАЙНЫХ ПОЗДРАВЛЕНИЙ 1-9 ----------
-let availableCongrats = [];
+    <footer class="footer">
+        <p>❤️ Léo Movsisyan</p>
+    </footer>
 
-function initCongratsPool() {
-    availableCongrats = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-}
-initCongratsPool();
+    <!-- МОДАЛЬНОЕ ОКНО С APPLE PAY, GOOGLE PAY И КАРТАМИ -->
+    <div id="gift-modal" class="modal-overlay" onclick="closeGiftModal(event)">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeGiftModal()">✕</button>
+            <img id="modal-product-img" src="" alt="Léo" class="modal-product-img">
+            <h3 id="modal-product-name" class="modal-title"></h3>
+            <p id="modal-product-desc" class="modal-desc"></p>
 
-function playRandomCongratsSound() {
-    if (availableCongrats.length === 0) {
-        initCongratsPool();
-    }
-    const randomIndex = Math.floor(Math.random() * availableCongrats.length);
-    const congratsNumber = availableCongrats.splice(randomIndex, 1)[0];
-    
-    playSpecificCongrats(congratsNumber);
-}
+            <form id="payment-form">
+                <!-- Сюда встроятся Apple Pay, Google Pay и форма карты -->
+                <div id="payment-element" class="payment-element-container"></div>
+                <div id="card-errors" role="alert" class="card-error-text"></div>
+                
+                <button id="submit-pay-btn" class="pay-btn" type="submit">
+                    <span>Participer (15 €) ✨</span>
+                </button>
+            </form>
+        </div>
+    </div>
 
-// ---------- МАССИВ ДЛЯ СЛУЧАЙНЫХ АНИМАЦИЙ 1-9 ----------
-let availableAnimations = [];
+    <div id="audio-container" class="audio-container">
+        <button id="audio-toggle" class="audio-btn" aria-label="Воспроизвести / Пауза">
+            <svg id="audio-icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            <svg id="audio-icon-pause" viewBox="0 0 24 24" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        </button>
+        <div class="audio-progress-bar">
+            <div id="audio-loading-progress" class="audio-progress-fill"></div>
+        </div>
+    </div>
+    <audio id="bg-audio" src="audio.mp3" preload="auto" loop></audio>
 
-function initAnimations() {
-    availableAnimations = [
-        () => megaConfetti(450),
-        () => fireworksExplosion(),
-        () => heartStorm(),
-        () => starStorm(),
-        () => rainbowCarnival(540),
-        () => emojiCarnival(),
-        () => sparkleBlizzard(),
-        () => balloonFestival(),
-        () => grandFireworkShow()
-    ];
-}
-initAnimations();
+    <script>
+        // ИНИЦИАЛИЗАЦИЯ STRIPE С ВАШИМ ПУБЛИЧНЫМ КЛЮЧОМ
+        const stripe = Stripe('pk_live_51U4tZeIV5DzsLoYubErKXrtxHkYIB8xlvRuedpMTvSCR9fYVyBEl4KtnDIAHmfD542gY2AfQFB64vhCektxTFkOr00ID42MQN6');
+        let elements;
 
-function launchRandomAnimation() {
-    if (availableAnimations.length === 0) {
-        initAnimations();
-    }
-    const randomIndex = Math.floor(Math.random() * availableAnimations.length);
-    const animation = availableAnimations.splice(randomIndex, 1)[0];
-    animation();
-}
+        const stripeProduct = {
+            name: "Participer au bonheur de Léo",
+            description: "On aime tous gâter Léo ! Si vous souhaitez vous joindre à nous pour lui imaginer une belle surprise, c’est ici. Merci de partager tout ce bonheur avec nous!",
+            image: "https://files.stripe.com/links/MDB8YWNjdF8xVTR0WmVJVjVEenNMb1l1fGZsX2xpdmVfem9RMmp3bVBrQ3g2U2ZEUEpnemFmdHl400K93AXpou"
+        };
 
-// ---------- СОЗДАНИЕ КВАДРАТОВ ----------
-const container = document.getElementById("container");
+        document.getElementById('modal-product-img').src = stripeProduct.image;
+        document.getElementById('modal-product-name').innerText = stripeProduct.name;
+        document.getElementById('modal-product-desc').innerText = stripeProduct.description;
 
-for (let i = 1; i <= 10; i++) {
-    const square = document.createElement("div");
-    square.className = `square square-${i}`;
-    square.textContent = i;
-    square.dataset.number = i;
+        async function openGiftModal() {
+            document.getElementById('gift-modal').classList.add('active');
 
-    square.onclick = function () {
-        if (this.classList.contains("green")) return;
+            if (!elements) {
+                try {
+                    // Запрос к бэкенду на получение clientSecret
+                    const response = await fetch('/create-payment-intent', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ amount: 1500, currency: 'eur' })
+                    });
+                    
+                    const data = await response.json();
 
-        if (!this.classList.contains("gray")) {
-            this.classList.add("gray");
-            playTaskSound(i);
-        } else {
-            this.classList.remove("gray");
-            this.classList.add("green");
-            localStorage.setItem("square" + i, "green");
-            
-            if (i === 10) {
-                ultimateCelebration();
-                playSpecificCongrats(10);
-            } else {
-                launchRandomAnimation();
-                playRandomCongratsSound();
+                    if (!data.clientSecret) {
+                        throw new Error("Не удалось получить ключ оплаты");
+                    }
+
+                    // Stripe Payment Element автоматически включает Apple Pay / Google Pay
+                    elements = stripe.elements({ clientSecret: data.clientSecret });
+                    const paymentElement = elements.create('payment', {
+                        layout: 'tabs'
+                    });
+                    paymentElement.mount('#payment-element');
+
+                } catch (err) {
+                    document.getElementById('card-errors').textContent = 'Ошибка загрузки способов оплаты. Проверьте сервер.';
+                }
             }
         }
-    };
 
-    container.appendChild(square);
-}
-
-// ---------- ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ----------
-function random(min, max) {
-    return Math.random() * (max - min) + min;
-}
-
-// ---------- СОЗДАНИЕ ЧАСТИЦ ----------
-function createParticle(size, value, duration = 4) {
-    const p = document.createElement("div");
-    p.className = "particle";
-
-    p.style.left = random(0, 100) + "vw";
-    p.style.top = random(-15, -5) + "vh";
-    p.style.fontSize = size + "px";
-
-    const driftX = random(-120, 120); 
-    p.style.setProperty('--drift-x', `${driftX}px`);
-
-    const finalDuration = duration + Math.random() * 2;
-    p.style.animation = `fall ${finalDuration}s linear forwards`;
-
-    if (value.startsWith("#") || value.includes(",")) {
-        const colors = value.split(",");
-        p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-        p.style.width = size + "px";
-        p.style.height = (size * 1.5) + "px";
-        p.style.borderRadius = "3px";
-    } else {
-        p.textContent = value;
-    }
-
-    document.body.appendChild(p);
-    setTimeout(() => p.remove(), finalDuration * 1000);
-}
-
-function spawnBatch(count, callback) {
-    let spawned = 0;
-    const batchSize = Math.ceil(count / 10);
-    
-    function doSpawn() {
-        const limit = Math.min(spawned + batchSize, count);
-        for (let i = spawned; i < limit; i++) {
-            callback();
+        function closeGiftModal(e) {
+            document.getElementById('gift-modal').classList.remove('active');
         }
-        spawned = limit;
-        if (spawned < count) {
-            requestAnimationFrame(doSpawn);
-        }
-    }
-    doSpawn();
-}
 
-function megaConfetti(count){
-    spawnBatch(count, () => {
-        createParticle(
-            7 + Math.random() * 8,
-            "#ff0000,#18a558,#0066ff,#ffd700,#ff00aa,#00ffff,#ff8800",
-            3.5
-        );
-    });
-}
+        // Обработка кнопки "Оплатить"
+        const paymentForm = document.getElementById('payment-form');
+        paymentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!elements) return;
 
-function fireworksExplosion(){
-    for(let i=0; i<12; i++){
-        setTimeout(()=>{
-            megaConfetti(120);
-        }, i * 120);
-    }
-}
+            const payBtn = document.getElementById('submit-pay-btn');
+            const errorElement = document.getElementById('card-errors');
+            
+            payBtn.disabled = true;
+            errorElement.textContent = '';
 
-function heartStorm(){
-    const hearts = ["❤️", "💖", "💗", "💘", "💝"];
-    spawnBatch(240, () => {
-        createParticle(
-            18 + Math.random() * 12,
-            hearts[Math.floor(Math.random() * hearts.length)],
-            4
-        );
-    });
-}
+            const { error } = await stripe.confirmPayment({
+                elements,
+                confirmParams: {
+                    return_url: window.location.href, // Перенаправление после успешной оплаты Apple Pay/Картой
+                },
+            });
 
-// Звезды
-function starStorm(){
-    spawnBatch(270, () => {
-        createParticle(
-            20,
-            "⭐",
-            3.5
-        );
-    });
-}
-
-function rainbowCarnival(count){
-    spawnBatch(count, () => {
-        createParticle(
-            9 + Math.random() * 5,
-            "#ff0044,#ff8800,#ffee00,#00ff66,#0088ff,#aa00ff",
-            4
-        );
-    });
-}
-
-function emojiCarnival(){
-    const emojis = ["🎉", "🎊", "🥳", "🌟", "🚀", "💥", "✨", "🔥", "🎈", "🍭"];
-    spawnBatch(240, () => {
-        createParticle(
-            22 + Math.random() * 12,
-            emojis[Math.floor(Math.random() * emojis.length)],
-            4
-        );
-    });
-}
-
-function sparkleBlizzard(){
-    spawnBatch(450, () => {
-        createParticle(
-            5 + Math.random() * 6,
-            "#ffffff,#ffff00,#ff88ff,#88ffff,#ffd700",
-            3
-        );
-    });
-}
-
-function balloonFestival(){
-    spawnBatch(135, () => {
-        createParticle(
-            30,
-            "🎈",
-            5
-        );
-    });
-}
-
-function grandFireworkShow(){
-    for(let i=0; i<8; i++){ 
-        setTimeout(()=>{
-            fireworksExplosion();
-        }, i * 250);
-    }
-}
-
-function ultimateCelebration(){
-    megaConfetti(500);
-    setTimeout(() => emojiCarnival(), 200);
-    setTimeout(() => heartStorm(), 500);
-    setTimeout(() => starStorm(), 800);
-    setTimeout(() => sparkleBlizzard(), 1100);
-    setTimeout(() => balloonFestival(), 1400);
-}
-
-function resetAll(){
-    if(confirm("Сбросить прогресс?")){
-        localStorage.clear();
-        stopCurrentAudio();
-        initAnimations(); 
-        initCongratsPool(); 
-        document.querySelectorAll(".square").forEach(square=>{
-            square.classList.remove("gray");
-            square.classList.remove("green");
+            if (error) {
+                errorElement.textContent = error.message;
+                payBtn.disabled = false;
+            }
         });
-    }
-}
 
-const style = document.createElement("style");
-style.innerHTML = `
-@keyframes fall {
-    0% {
-        transform: translate3d(0, 0, 0) rotate(0deg);
-        opacity: 1;
-    }
-    100% {
-        transform: translate3d(var(--drift-x, 0px), 115vh, 0) rotate(720deg);
-        opacity: 0;
-    }
-}
-`;
-document.head.appendChild(style);
-</script>
+        // ГАЛЕРЕЯ КАРТОЧЕК
+        let photos = [];
+        const stackContainer = document.getElementById('stack');
+        const badge = document.getElementById('badge');
 
+        const stackTransforms = [
+            { scale: 1.0,  rotate: 0,   ty: 0,   tx: 0 },
+            { scale: 0.94, rotate: -4,  ty: 12,  tx: -8 },
+            { scale: 0.88, rotate: 5,   ty: 22,  tx: 10 },
+            { scale: 0.82, rotate: -2,  ty: 30,  tx: -4 }
+        ];
+
+        let cards = [];
+        let currentIndex = 0;
+        let startX = 0, startY = 0, currentX = 0, currentY = 0;
+        let isDragging = false;
+        const VISIBLE_CARDS_LIMIT = 4;
+
+        let autoPlayInterval = null;
+        const AUTO_PLAY_DELAY = 3500;
+
+        function startAutoPlay() {
+            if (!autoPlayInterval && photos.length > 1) {
+                autoPlayInterval = setInterval(() => {
+                    advanceCard();
+                }, AUTO_PLAY_DELAY);
+            }
+        }
+
+        function stopAutoPlay() {
+            if (autoPlayInterval) {
+                clearInterval(autoPlayInterval);
+                autoPlayInterval = null;
+            }
+        }
+
+        function advanceCard() {
+            if (cards.length === 0) return;
+            const topCard = cards[0];
+            
+            topCard.style.transition = 'transform 0.45s ease-out, opacity 0.35s ease-out';
+            topCard.style.transform = 'translate3d(-350px, -20px, 0px) rotate(-15deg)';
+            topCard.style.opacity = '0';
+
+            removeTouchListeners(topCard);
+
+            setTimeout(() => {
+                currentIndex = (currentIndex + 1) % photos.length;
+                renderStack();
+            }, 250);
+        }
+
+        async function loadPhotos() {
+            try {
+                const response = await fetch('photos.json');
+                if (!response.ok) throw new Error('Ошибка JSON');
+                const data = await response.json();
+                photos = data.map(file => file.startsWith('photos/') || file.startsWith('photo/') ? file : `photos/${file}`);
+            } catch (error) {
+                photos = [];
+                for (let i = 1; i <= 59; i++) {
+                    photos.push(i === 14 ? 'photos/14.mp4' : `photos/${i}.jpg`);
+                }
+            }
+            renderStack();
+            startAutoPlay();
+        }
+
+        function createCardElement(filePath) {
+            const card = document.createElement('div');
+            card.className = 'photo-card';
+            const isVideo = filePath.toLowerCase().endsWith('.mp4');
+
+            if (isVideo) {
+                const video = document.createElement('video');
+                video.className = 'card-video';
+                video.src = filePath;
+                video.autoplay = true;
+                video.loop = true;
+                video.muted = true;
+                video.playsInline = true;
+                video.setAttribute('playsinline', '');
+                video.setAttribute('webkit-playsinline', '');
+                video.setAttribute('disablePictureInPicture', '');
+                video.setAttribute('disableRemotePlayback', '');
+                card.appendChild(video);
+            } else {
+                const bgBlur = document.createElement('div');
+                bgBlur.className = 'photo-bg-blur';
+                bgBlur.style.backgroundImage = `url('${filePath}')`;
+
+                const fgMain = document.createElement('div');
+                fgMain.className = 'photo-fg-main';
+                fgMain.style.backgroundImage = `url('${filePath}')`;
+
+                card.appendChild(bgBlur);
+                card.appendChild(fgMain);
+            }
+
+            return card;
+        }
+
+        function renderStack() {
+            stackContainer.innerHTML = '';
+            cards = [];
+
+            if (photos.length === 0) return;
+
+            const count = Math.min(VISIBLE_CARDS_LIMIT, photos.length);
+            for (let i = count - 1; i >= 0; i--) {
+                const photoIdx = (currentIndex + i) % photos.length;
+                const card = createCardElement(photos[photoIdx]);
+                stackContainer.appendChild(card);
+                cards.unshift(card);
+            }
+
+            updateCardTransforms(false);
+            updateBadge();
+            setupTouchListeners();
+        }
+
+        function updateCardTransforms(animated = true) {
+            cards.forEach((card, index) => {
+                const transformDef = stackTransforms[Math.min(index, stackTransforms.length - 1)];
+                card.style.transition = animated ? 'transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1), opacity 0.4s ease' : 'none';
+                card.style.zIndex = VISIBLE_CARDS_LIMIT - index;
+                card.style.opacity = index < 3 ? '1' : '0.4';
+
+                if (index === 0 && isDragging) return;
+
+                card.style.transform = `translate3d(${transformDef.tx}px, ${transformDef.ty}px, 0px) scale(${transformDef.scale}) rotate(${transformDef.rotate}deg)`;
+            });
+        }
+
+        function updateBadge() {
+            if (photos.length === 0) return;
+            badge.innerText = `${currentIndex + 1} / ${photos.length}`;
+        }
+
+        function setupTouchListeners() {
+            const topCard = cards[0];
+            if (!topCard) return;
+
+            topCard.addEventListener('touchstart', onTouchStart, { passive: true });
+            topCard.addEventListener('touchmove', onTouchMove, { passive: false });
+            topCard.addEventListener('touchend', onTouchEnd);
+            topCard.addEventListener('mousedown', onMouseDown);
+        }
+
+        function removeTouchListeners(card) {
+            if (!card) return;
+            card.removeEventListener('touchstart', onTouchStart);
+            card.removeEventListener('touchmove', onTouchMove);
+            card.removeEventListener('touchend', onTouchEnd);
+            card.removeEventListener('mousedown', onMouseDown);
+        }
+
+        function onTouchStart(e) {
+            stopAutoPlay();
+            isDragging = true;
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            currentX = startX;
+            currentY = startY;
+            cards[0].style.transition = 'none';
+        }
+
+        function onTouchMove(e) {
+            if (!isDragging) return;
+            currentX = e.touches[0].clientX;
+            currentY = e.touches[0].clientY;
+            const deltaX = currentX - startX;
+            const deltaY = currentY - startY;
+
+            if (Math.abs(deltaX) > Math.abs(deltaY)) e.preventDefault();
+
+            const rotation = deltaX * 0.08;
+            cards[0].style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0px) rotate(${rotation}deg)`;
+
+            if (cards[1]) {
+                const progress = Math.min(Math.abs(deltaX) / 200, 1);
+                const nextTransform = stackTransforms[1];
+                const currentScale = nextTransform.scale + (1.0 - nextTransform.scale) * progress;
+                const currentTy = nextTransform.ty * (1 - progress);
+                const currentRotate = nextTransform.rotate * (1 - progress);
+
+                cards[1].style.transition = 'none';
+                cards[1].style.transform = `translate3d(0px, ${currentTy}px, 0px) scale(${currentScale}) rotate(${currentRotate}deg)`;
+            }
+        }
+
+        function onTouchEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+
+            const deltaX = currentX - startX;
+            const deltaY = currentY - startY;
+            const distance = Math.hypot(deltaX, deltaY);
+            const topCard = cards[0];
+
+            if (distance > 90) {
+                const throwX = deltaX * 3;
+                const throwY = deltaY * 3;
+                const throwRotate = deltaX * 0.15;
+
+                topCard.style.transition = 'transform 0.45s ease-out, opacity 0.35s ease-out';
+                topCard.style.transform = `translate3d(${throwX}px, ${throwY}px, 0px) rotate(${throwRotate}deg)`;
+                topCard.style.opacity = '0';
+
+                removeTouchListeners(topCard);
+
+                setTimeout(() => {
+                    currentIndex = (currentIndex + 1) % photos.length;
+                    renderStack();
+                }, 250);
+            } else {
+                updateCardTransforms(true);
+            }
+        }
+
+        function onMouseDown(e) {
+            stopAutoPlay();
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            currentX = startX;
+            currentY = startY;
+            cards[0].style.transition = 'none';
+
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mouseup', onMouseUp);
+        }
+
+        function onMouseMove(e) {
+            if (!isDragging) return;
+            currentX = e.clientX;
+            currentY = e.clientY;
+            const deltaX = currentX - startX;
+            const deltaY = currentY - startY;
+            cards[0].style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0px) rotate(${deltaX * 0.08}deg)`;
+        }
+
+        function onMouseUp() {
+            window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('mouseup', onMouseUp);
+            onTouchEnd();
+        }
+
+        // АУДИОПЛЕЕР
+        const audio = document.getElementById('bg-audio');
+        const progressBar = document.getElementById('audio-loading-progress');
+        const audioToggle = document.getElementById('audio-toggle');
+        const iconPlay = document.getElementById('audio-icon-play');
+        const iconPause = document.getElementById('audio-icon-pause');
+
+        function updateAudioUI() {
+            if (audio.paused) {
+                iconPlay.style.display = 'block';
+                iconPause.style.display = 'none';
+            } else {
+                iconPlay.style.display = 'none';
+                iconPause.style.display = 'block';
+            }
+        }
+
+        audio.addEventListener('progress', () => {
+            if (audio.buffered.length > 0) {
+                const loadedRatio = audio.buffered.end(0) / audio.duration;
+                const percentage = Math.round(loadedRatio * 100);
+                progressBar.style.width = `${percentage}%`;
+            }
+        });
+
+        function tryPlayAudio() {
+            audio.play().then(() => updateAudioUI()).catch(() => updateAudioUI());
+        }
+
+        const initAudioOnInteraction = () => {
+            tryPlayAudio();
+            document.removeEventListener('touchstart', initAudioOnInteraction);
+            document.removeEventListener('click', initAudioOnInteraction);
+        };
+
+        document.addEventListener('touchstart', initAudioOnInteraction, { once: true });
+        document.addEventListener('click', initAudioOnInteraction, { once: true });
+
+        audioToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (audio.paused) audio.play();
+            else audio.pause();
+            updateAudioUI();
+        });
+
+        document.addEventListener('DOMContentLoaded', loadPhotos);
+    </script>
 </body>
 </html>
